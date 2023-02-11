@@ -112,3 +112,14 @@ vault_REDIS_KEY: 'ewogICAiSW5zdXJhbmNlQ29tcGFuaWVzIjp7CiAgICAgICJUaW1lIjoiTWF5ID
 
 ````
 
+## Decrypt base64 environment variables
+Following example shows how to decode and export base64 encoded environment variable into file
+````sh
+#!/bin/bash
+
+# Decode the base64 value of the JSON
+decoded_redis_key=$(echo "$REDIS_KEY" | base64 --decode)
+
+# Write the decoded JSON to a file
+echo "$decoded_redis_key" > output.json
+````
