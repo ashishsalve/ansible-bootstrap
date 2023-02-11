@@ -67,7 +67,7 @@ ansible-playbook -i 192.168.0.121, configure.yml --user ashish --ask-vault-pass
 Here is an example playbook that sets up vault secrets, apply those secrets as environment variables on target machine and install apache.
 ````secrets.yml
 vault_TANGO: CHARLIE
-vault_REDIS_KEY: ABC123
+vault_REDIS_KEY: 'ewogICAiSW5zdXJhbmNlQ29tcGFuaWVzIjp7CiAgICAgICJUaW1lIjoiTWF5IDIwMjEiLAogICAgICAiVG9wIEluc3VyYW5jZSBDb21wYW5pZXMiOlsKICAgICAgICAgewogICAgICAgICAgICAiTm8iOiIxIiwKICAgICAgICAgICAgIk5hbWUiOiJCZXJrc2hpcmUgSGF0aGF3YXkgKCBCUksuQSkiLAogICAgICAgICAgICAiTWFya2V0IENhcGl0YWxpemF0aW9uIjoiJDY1NSBiaWxsaW9uIgogICAgICAgICB9CiAgICAgIF0sCiAgICAgICJzb3VyY2UiOiJpbnZlc3RvcGVkaWEuY29tIiwKICAgICAgInVybCI6Imh0dHBzOi8vd3d3LmludmVzdG9wZWRpYS5jb20vYXJ0aWNsZXMvYWN0aXZlLXRyYWRpbmcvMTExMzE0L3RvcC0xMC1pbnN1cmFuY2UtY29tcGFuaWVzLW1ldHJpY3MuYXNwIgogICB9Cn0='
 ````
 
 ````configure.yml
@@ -99,13 +99,15 @@ vault_REDIS_KEY: ABC123
     - name: Create environment variables
       shell: |
         echo "export TANGO={{ vault_TANGO }}" >> /home/{{ user }}/.bashrc
-        echo "export REDIS_KEY={{ vault_REDIS_KEY }}" >> /home/{{ user }}/.bashrc
+        echo "export REDIS_KEY='{{ vault_REDIS_KEY }}'" >> /home/{{ user }}/.bashrc
 
     - name: Display environment variables
       become_user: "{{ user }}"
       shell: |
         echo "TANGO is set to: $TANGO"
         echo "REDIS_KEY is set to: $REDIS_KEY"
+
+
 
 
 ````
