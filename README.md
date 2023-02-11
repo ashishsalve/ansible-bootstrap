@@ -1,10 +1,10 @@
 # Preparing Debian 11 for Ansible
-This repository contains a shell script that will prepare a clean minimal Debian 11 system for use with Ansible. 
+This repository contains information to prepare a clean minimal Debian 11 target system for use with Ansible. 
 The script assumes that a user named "ashish" has already been created on the system.
 
-## Running the script
+## STEP 1: Prepare target machine
 
-To run the script, copy the contents of the script below and save it to a file on your Debian 11 system. Then, run the script as the root user.
+Copy the contents of the script below into init.sh and save it to a file on your Debian 11 system. Then, run the script as the root user.
 
 ````sh
 #!/bin/bash
@@ -33,4 +33,10 @@ git clone https://github.com/ashishsalve/ansible-bootstrap.git
 cd ansible-bootstrap
 ./init.sh
 
+````
+
+Make this script executable and run it.
+````sh
+chmod +x init.sh
+./init.sh
 ````
