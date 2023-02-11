@@ -9,29 +9,33 @@ Copy the contents of the script below into init.sh and save it to a file on your
 ````sh
 #!/bin/bash
 
+# Set the user name
+user=ashish
+
 # Update the system
-apt update && apt upgrade -y
+apt update -y && apt upgrade -y
 
 # Install sudo
 apt install sudo -y
-/sbin/usermod -aG sudo ashish
+/usr/sbin/usermod -aG sudo $user
 
-# Add user ashish to sudoers
-user=ashish
+# Add user to sudoers
 echo "$user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 # Install Git
 apt install git -y
 
-$ Install Python
+# Install Python
 apt install python3 -y
 
 # Clone the GitHub repository
+cd ~
 git clone https://github.com/ashishsalve/ansible-bootstrap.git
 
 # Run the init script
-cd ansible-bootstrap
+cd ~/ansible-bootstrap
 ./init.sh
+
 
 ````
 
