@@ -28,14 +28,7 @@ apt install git -y
 # Install Python
 apt install python3 -y
 
-# Clone the GitHub repository
-cd ~
-git clone https://github.com/ashishsalve/ansible-bootstrap.git
-
-# Run the init script
-cd ~/ansible-bootstrap
-./init.sh
-
+echo "Auto configuration setup complete. This machine is now ready for Ansible deployment."
 
 ````
 
@@ -44,3 +37,19 @@ Make this script executable and run it.
 chmod +x init.sh
 ./init.sh
 ````
+
+# Control Machine
+Follow these instructions on control machine to auto configure target machines.
+
+## SSH Auto-login
+````sh
+# Add public key for public key authentication
+ssh-copy-id ashish@hostname
+
+# Login via SSH
+ssh ashish@hostname
+
+# become root
+su
+````
+Follow steps mentioned at the top of this page to create and run init.sh
