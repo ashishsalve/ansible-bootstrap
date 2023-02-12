@@ -1,11 +1,15 @@
 # Preparing Debian 11 for Ansible
-This repository contains information to prepare a clean minimal Debian 11 target system for use with Ansible. 
-The script assumes that a user named "user" has already been created on the system.
+This repository contains information and scripts for preparing a clean, minimal Debian 11 target system for use with Ansible. The script assumes that a user named "user" has already been created on the system.
+
+
 
 # Control Machine
-Follow these instructions on control machine:
+To prepare your control machine, follow these steps:
+
 
 ## SSH Auto-login
+
+To set up SSH auto-login, perform the following actions:
 ````sh
 # Add public key for public key authentication
 ssh-copy-id user@hostname
@@ -18,9 +22,9 @@ su
 ````
 
 
-## STEP 1: Prepare target machine
+## Target Machine Preparation
 
-Copy the contents of the script below into init.sh and save it to a file on your Debian 11 system. Then, run the script as the root user.
+1. Copy the contents of the script below into a file named `init.sh`
 
 ````sh
 #!/bin/bash
@@ -49,18 +53,17 @@ echo "Auto configuration setup complete. This machine is now ready for Ansible d
 
 ````
 
-Make this script executable and run it.
-````sh
-chmod +x init.sh
-./init.sh
-````
+2. Make the script executable by running `chmod +x init.sh`.
+3. Run the script by executing `./init.sh`.
 
+## Ansible Control Machine
 
 Follow steps mentioned at the top of this page to create and run init.sh
 Exit the machine once init.sh completes execution.
 
 # Ansible Control Machine
-Assuming ansible is installed on control machine, use following to create secrets vault and run the playbook:
+Assuming Ansible is installed on the control machine, perform the following steps to create a secrets vault and run the playbook:
+
 ````sh
 ansible-vault create secrets.yml
 # OR to edit vault, use
@@ -68,19 +71,26 @@ ansible-vault create secrets.yml
 ansible-playbook -i hostname, configure.yml --user ashish --ask-vault-pass
 ````
 
-Here is an example playbook that sets up vault secrets, apply those secrets as environment variables on target machine and install apache.
+
+This is an example of decrypted vault secrets file:
 ````secrets.yml
 vault_TANGO: 'CHARLIE'
 vault_REDIS_KEY: 'SOME string here....'
 ````
 
+# Workfolow
+For all projects, follow these steps:
+1. Create a private repository and copy the `configure.yml` file from this repository.
+2. Create an init.sh file.
+3. Create a `service-utils/` directory containing any utilities or scripts that are not part of the primary codebase.
+4. Run the playbook, SSH into the target machine, and run `init.sh`. With these steps, the server should be ready to proceed with development.
+
+
 ````configure.yml
 ---
-- name: Install Apache on Debian 11
+- name: Setup debian11 machine secrets for grantsfire API
   hosts: all
   become: yes
-  vars:
-    user: ashish
   vars_files: 
     - secrets.yml
 
@@ -89,41 +99,42 @@ vault_REDIS_KEY: 'SOME string here....'
       apt:
         update_cache: yes
 
-    - name: Install Apache
-      apt:
-        name: apache2
-        state: present
-
-    - name: Start Apache service
-      service:
-        name: apache2
-        state: started
-        enabled: yes
+    - name: Set ansible_user variable
+      set_fact:
+        ansible_user: "{{ ansible_ssh_user }}"
 
     - name: Create environment variables
       shell: |
-        echo "export TANGO={{ vault_TANGO }}" >> /home/{{ user }}/.bashrc
-        echo "export REDIS_KEY='{{ vault_REDIS_KEY }}'" >> /home/{{ user }}/.bashrc
+        echo "export DB_CONNECTION={{ vault_DB_CONNECTION }}" >> /home/{{ ansible_user }}/.bashrc
+        
 
-    - name: Display environment variables
-      become_user: "{{ user }}"
-      shell: |
-        echo "TANGO is set to: $TANGO"
-        echo "REDIS_KEY is set to: $REDIS_KEY"
+    - name: Copy init.sh file to home directory
+      copy:
+        src: init.sh
+        dest: /home/{{ ansible_user }}/init.sh
+      become: yes
+
+    - name: Make init.sh executable
+      file:
+        path: /home/{{ ansible_user }}/init.sh
+        mode: 0755
+      become: yes
+
+    - name: Set ansible_user variable
+      set_fact:
+        ansible_user: "{{ ansible_ssh_user }}"
+
+    - name: Copy service-utils folder
+      copy:
+        src: service-utils/
+        dest: /home/{{ ansible_user }}/service-utils/
+      become: yes
+      become_user: "{{ ansible_user }}"
 
 
 
 
 ````
 
-## Decrypt base64 environment variables
-Following example shows how to decode and export base64 encoded environment variable into file
-````sh
-#!/bin/bash
-
-# Decode the base64 value of the JSON
-decoded_redis_key=$(echo "$REDIS_KEY" | base64 --decode)
-
-# Write the decoded JSON to a file
-echo "$decoded_redis_key" > output.json
-````
+## Storing JSON files for service accounts
+To store JSON files for service accounts, make sure to convert the JSON object to a base64 string and assign the string value to a variable. Then, decrypt it on the target machine.
